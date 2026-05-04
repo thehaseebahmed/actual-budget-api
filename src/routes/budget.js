@@ -60,6 +60,72 @@ async function openSession() {
 }
 
 /**
+ * GET /categories
+ */
+router.get('/categories', async (req, res) => {
+  try {
+    const result = await withLock(async () => {
+      if (!sessionOpen) {
+        await openSession();
+      } else {
+        const downloadOpts = budgetPassword ? { password: budgetPassword } : {};
+        try {
+          await api.downloadBudget(budgetId, downloadOpts);
+        } catch {
+          await api.shutdown().catch(() => {});
+          sessionOpen = false;
+          await openSession();
+        }
+      }
+
+      return await api.getCategories();
+    });
+
+    res.json({ categories: result });
+  } catch (err) {
+    if (sessionOpen) {
+      await api.shutdown().catch(() => {});
+      sessionOpen = false;
+    }
+    const message = err?.message ?? String(err);
+    res.status(502).json({ error: `Actual API error: ${message}` });
+  }
+});
+
+/**
+ * GET /category-groups
+ */
+router.get('/category-groups', async (req, res) => {
+  try {
+    const result = await withLock(async () => {
+      if (!sessionOpen) {
+        await openSession();
+      } else {
+        const downloadOpts = budgetPassword ? { password: budgetPassword } : {};
+        try {
+          await api.downloadBudget(budgetId, downloadOpts);
+        } catch {
+          await api.shutdown().catch(() => {});
+          sessionOpen = false;
+          await openSession();
+        }
+      }
+
+      return await api.getCategoryGroups();
+    });
+
+    res.json({ categoryGroups: result });
+  } catch (err) {
+    if (sessionOpen) {
+      await api.shutdown().catch(() => {});
+      sessionOpen = false;
+    }
+    const message = err?.message ?? String(err);
+    res.status(502).json({ error: `Actual API error: ${message}` });
+  }
+});
+
+/**
  * GET /:year/:month
  * e.g. GET /2025/03
  */
