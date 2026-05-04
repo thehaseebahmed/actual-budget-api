@@ -1,0 +1,13 @@
+services:
+  actual-api:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - actual-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  actual-data:
